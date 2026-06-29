@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Solo2020 · Beach Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0A0A0F;
+  --surface:#13131A;
+  --surface2:#1C1C26;
+  --border:#2A2A3A;
+  --accent:#00F5A0;
+  --accent2:#00C8FF;
+  --red:#FF4D6A;
+  --yellow:#FFD60A;
+  --text:#F0F0FF;
+  --muted:#6B6B8A;
+  --radius:12px;
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column}
+.header{padding:16px 20px 0;flex-shrink:0}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.logo{font-family:'Space Mono',monospace;font-weight:700;font-size:15px;color:var(--accent);letter-spacing:1px}
+.date-badge{font-size:12px;color:var(--muted);background:var(--surface);padding:6px 12px;border-radius:100px;border:1px solid var(--border)}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:0 20px;flex-shrink:0}
+.tab{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 4px;text-align:center;cursor:pointer;transition:.2s;font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.5px;user-select:none}
+.tab .ti{font-size:18px;display:block;margin-bottom:4px}
+.tab.active{background:var(--accent);border-color:var(--accent);color:#000}
+.content{flex:1;overflow-y:auto;padding:16px 20px 32px}
+.panel{display:none}
+.panel.active{display:block}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px}
+.card-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.sb{background:var(--surface2);border-radius:10px;padding:14px 12px;border:1px solid var(--border)}
+.sb.a{border-color:var(--accent);background:rgba(0,245,160,.06)}
+.sb.r{border-color:var(--red);background:rgba(255,77,106,.06)}
+.sb.b{border-color:var(--accent2);background:rgba(0,200,255,.06)}
+.sb.y{border-color:var(--yellow);background:rgba(255,214,10,.06)}
+.sv{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;line-height:1}
+.sv.a{color:var(--accent)}.sv.r{color:var(--red)}.sv.b{color:var(--accent2)}.sv.y{color:var(--yellow)}
+.sl{font-size:11px;color:var(--muted);margin-top:4px}
+.ir{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.ir3{grid-template-columns:1fr 1fr 1fr}
+.field{display:flex;flex-direction:column;gap:5px}
+label{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+input[type=number],input[type=text]{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'Space Grotesk',sans-serif;font-size:15px;color:var(--text);width:100%;transition:.15s}
+input:focus{outline:none;border-color:var(--accent)}
+input::placeholder{color:var(--muted)}
+.btn{width:100%;padding:13px;border-radius:10px;border:none;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;cursor:pointer;margin-top:4px;transition:.15s}
+.btn-a{background:var(--accent);color:#000}
+.btn-r{background:var(--red);color:#fff}
+.btn-s{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.rbox{background:var(--surface2);border:1px solid var(--accent);border-radius:10px;padding:16px;margin-top:12px;display:none}
+.rbox.show{display:block}
+.rr{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:14px}
+.rr:last-child{border-bottom:none;padding-top:10px;margin-top:4px}
+.rr .rl{color:var(--muted)}
+.rr .rv{font-family:'Space Mono',monospace;font-weight:700}
+.rr.tot .rv{color:var(--accent);font-size:18px}
+.rr.tot .rl{color:var(--text);font-weight:600}
+.ll{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.li{background:var(--surface2);border-radius:10px;padding:14px;border:1px solid var(--border)}
+.li-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.li-name{font-weight:600;font-size:14px}
+.li-meta{font-size:12px;color:var(--muted);margin-top:2px}
+.li-profit{font-family:'Space Mono',monospace;font-weight:700;font-size:15px;color:var(--accent)}
+.li-sub{font-size:12px;color:var(--muted);margin-top:2px;text-align:right}
+.empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px}
+.empty .ei{font-size:36px;margin-bottom:10px}
+.sbar-wrap{background:var(--border);border-radius:6px;height:5px;overflow:hidden;margin:8px 0 4px}
+.sbar-fill{height:100%;border-radius:6px;transition:.3s}
+.sell-row{display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:center}
+.sell-row input{padding:8px 10px;font-size:14px}
+.mini-btn{padding:8px 14px;border-radius:8px;border:none;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap}
+.mini-btn-a{background:var(--accent);color:#000}
+.mini-btn-r{background:rgba(255,77,106,.15);color:var(--red);border:1px solid var(--red) !important;border:none}
+.rm-btn{width:100%;margin-top:8px;padding:7px;border-radius:8px;border:1px solid var(--red);background:rgba(255,77,106,.1);color:var(--red);font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:12px;cursor:pointer;letter-spacing:.5px}
+.slbl{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:16px 0 10px}
+.season-bar{background:var(--surface2);border-radius:8px;height:8px;margin-top:8px;overflow:hidden}
+.season-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:8px;transition:.5s}
+.pl{display:flex;justify-content:space-between;font-size:12px;margin-top:6px}
+.pl span{color:var(--muted)}.pl strong{color:var(--text)}
+.content::-webkit-scrollbar{width:3px}
+.content::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo">SOLO2020</div>
+    <div class="date-badge" id="datebadge"></div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" id="tab-calc" onclick="switchTab('calc')"><span class="ti">🧮</span>CALC</div>
+    <div class="tab" id="tab-today" onclick="switchTab('today')"><span class="ti">☀️</span>TODAY</div>
+    <div class="tab" id="tab-stock" onclick="switchTab('stock')"><span class="ti">📦</span>STOCK</div>
+    <div class="tab" id="tab-season" onclick="switchTab('season')"><span class="ti">📊</span>SEASON</div>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- CALC -->
+  <div class="panel active" id="panel-calc">
+    <div class="card">
+      <div class="card-title">Quick Profit Calculator</div>
+      <div class="ir ir3">
+        <div class="field"><label>Buy €</label><input type="number" id="c-buy" placeholder="0.50" step="0.01" oninput="calcProfit()"></div>
+        <div class="field"><label>Sell €</label><input type="number" id="c-sell" placeholder="1.00" step="0.01" oninput="calcProfit()"></div>
+        <div class="field"><label>Qty</label><input type="number" id="c-qty" placeholder="10" oninput="calcProfit()"></div>
+      </div>
+      <div class="rbox" id="calc-result">
+        <div class="rr"><span class="rl">Cost</span><span class="rv" id="r-cost" style="color:var(--red)">€0.00</span></div>
+        <div class="rr"><span class="rl">Revenue</span><span class="rv" id="r-revenue" style="color:var(--accent2)">€0.00</span></div>
+        <div class="rr"><span class="rl">Margin per unit</span><span class="rv" id="r-margin">€0.00</span></div>
+        <div class="rr tot"><span class="rl">💰 Total Profit</span><span class="rv a" id="r-profit">€0.00</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Log This Sale to Today</div>
+      <div class="ir">
+        <div class="field"><label>Item Name</label><input type="text" id="c-name" placeholder="Water bottle"></div>
+        <div class="field"><label>Round #</label><input type="number" id="c-round" placeholder="1"></div>
+      </div>
+      <button class="btn btn-a" onclick="logSale()">+ Add to Today</button>
+    </div>
+  </div>
+
+  <!-- TODAY -->
+  <div class="panel" id="panel-today">
+    <div class="sg">
+      <div class="sb a"><div class="sv a" id="t-profit">€0.00</div><div class="sl">Today's Profit</div></div>
+      <div class="sb b"><div class="sv b" id="t-revenue">€0.00</div><div class="sl">Revenue</div></div>
+      <div class="sb y"><div class="sv y" id="t-sold">0</div><div class="sl">Units Sold</div></div>
+      <div class="sb r"><div class="sv r" id="t-rounds">0</div><div class="sl">Rounds</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Today's Sales</div>
+      <div class="ll" id="today-log"></div>
+    </div>
+    <button class="btn btn-r" onclick="endDay()">End Day → Save to Season</button>
+  </div>
+
+  <!-- STOCK -->
+  <div class="panel" id="panel-stock">
+    <div class="card">
+      <div class="card-title">Add Stock</div>
+      <div class="ir">
+        <div class="field"><label>Item</label><input type="text" id="i-name" placeholder="Water 500ml"></div>
+        <div class="field"><label>Qty Bought</label><input type="number" id="i-qty" placeholder="24"></div>
+      </div>
+      <div class="ir">
+        <div class="field"><label>Buy Price €</label><input type="number" id="i-buy" placeholder="0.40" step="0.01"></div>
+        <div class="field"><label>Sell Price €</label><input type="number" id="i-sell" placeholder="1.00" step="0.01"></div>
+      </div>
+      <button class="btn btn-a" onclick="addStock()">+ Add to Stock</button>
+    </div>
+    <div class="slbl">Current Stock</div>
+    <div class="ll" id="stock-list"></div>
+  </div>
+
+  <!-- SEASON -->
+  <div class="panel" id="panel-season">
+    <div class="sg">
+      <div class="sb a" style="grid-column:1/-1">
+        <div class="sv a" id="s-total" style="font-size:32px">€0.00</div>
+        <div class="sl">Total Season Profit</div>
+      </div>
+      <div class="sb b"><div class="sv b" id="s-days">0</div><div class="sl">Days Worked</div></div>
+      <div class="sb y"><div class="sv y" id="s-units">0</div><div class="sl">Total Sold</div></div>
+      <div class="sb" style="grid-column:1/-1">
+        <div class="sl" style="margin-bottom:8px">Progress to Goal</div>
+        <div class="season-bar"><div class="season-fill" id="goal-bar" style="width:0%"></div></div>
+        <div class="pl"><span id="goal-pct">0%</span><strong id="goal-display">Goal: €300</strong></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Set Your Goal</div>
+      <div class="ir">
+        <div class="field"><label>Target €</label><input type="number" id="goal-input" placeholder="300" value="300" oninput="updateGoal()"></div>
+        <div class="field"><label>Days Left</label><input type="number" id="days-left" placeholder="60" oninput="updateGoal()"></div>
+      </div>
+      <div class="rbox show">
+        <div class="rr"><span class="rl">Need per day</span><span class="rv" style="color:var(--accent)" id="per-day">€5.00</span></div>
+        <div class="rr"><span class="rl">Remaining</span><span class="rv" id="remaining">€300.00</span></div>
+      </div>
+    </div>
+    <div class="slbl">Daily History</div>
+    <div class="ll" id="season-log"></div>
+    <button class="btn btn-r" style="margin-top:12px" onclick="resetSeason()">Reset Season</button>
+  </div>
+
+</div>
+
+<script>
+// ── STATE ──
+var state = {today:[],season:[],stock:[],goal:300};
+try{ var s=localStorage.getItem('solo2020'); if(s) state=JSON.parse(s); }catch(e){}
+
+function save(){try{localStorage.setItem('solo2020',JSON.stringify(state));}catch(e){}}
+
+// DATE
+document.getElementById('datebadge').textContent=new Date().toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+
+// ── TABS ──
+function switchTab(name){
+  ['calc','today','stock','season'].forEach(function(t){
+    document.getElementById('panel-'+t).classList.remove('active');
+    document.getElementById('tab-'+t).classList.remove('active');
+  });
+  document.getElementById('panel-'+name).classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='today') renderToday();
+  if(name==='stock') renderStock();
+  if(name==='season') renderSeason();
+}
+
+// ── CALC ──
+function calcProfit(){
+  var buy=parseFloat(document.getElementById('c-buy').value)||0;
+  var sell=parseFloat(document.getElementById('c-sell').value)||0;
+  var qty=parseInt(document.getElementById('c-qty').value)||0;
+  var box=document.getElementById('calc-result');
+  if(!buy&&!sell&&!qty){box.classList.remove('show');return;}
+  box.classList.add('show');
+  document.getElementById('r-cost').textContent='€'+(buy*qty).toFixed(2);
+  document.getElementById('r-revenue').textContent='€'+(sell*qty).toFixed(2);
+  document.getElementById('r-margin').textContent='€'+(sell-buy).toFixed(2);
+  document.getElementById('r-profit').textContent='€'+((sell-buy)*qty).toFixed(2);
+}
+
+function logSale(){
+  var buy=parseFloat(document.getElementById('c-buy').value)||0;
+  var sell=parseFloat(document.getElementById('c-sell').value)||0;
+  var qty=parseInt(document.getElementById('c-qty').value)||0;
+  var name=document.getElementById('c-name').value||'Item';
+  var round=parseInt(document.getElementById('c-round').value)||1;
+  if(!sell||!qty){alert('Enter sell price and quantity');return;}
+  state.today.push({name:name,buy:buy,sell:sell,qty:qty,round:round,
+    profit:(sell-buy)*qty,revenue:sell*qty,
+    time:new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})});
+  save();
+  document.getElementById('c-buy').value='';
+  document.getElementById('c-sell').value='';
+  document.getElementById('c-qty').value='';
+  document.getElementById('c-name').value='';
+  document.getElementById('c-round').value='';
+  document.getElementById('calc-result').classList.remove('show');
+  alert('Sale logged!');
+}
+
+// ── TODAY ──
+function removeSale(i){
+  if(!confirm('Remove this sale?')) return;
+  state.today.splice(i,1);
+  save();
+  renderToday();
+}
+
+function renderToday(){
+  var log=document.getElementById('today-log');
+  if(!state.today.length){
+    log.innerHTML='<div class="empty"><div class="ei">🏖️</div>No sales yet.<br>Use Calc tab to log sales.</div>';
+    document.getElementById('t-profit').textContent='€0.00';
+    document.getElementById('t-revenue').textContent='€0.00';
+    document.getElementById('t-sold').textContent='0';
+    document.getElementById('t-rounds').textContent='0';
+    return;
+  }
+  var totalProfit=0,totalRevenue=0,totalSold=0,roundSet={};
+  for(var j=0;j<state.today.length;j++){
+    totalProfit+=state.today[j].profit;
+    totalRevenue+=state.today[j].revenue;
+    totalSold+=state.today[j].qty;
+    roundSet[state.today[j].round]=1;
+  }
+  document.getElementById('t-profit').textContent='€'+totalProfit.toFixed(2);
+  document.getElementById('t-revenue').textContent='€'+totalRevenue.toFixed(2);
+  document.getElementById('t-sold').textContent=totalSold;
+  document.getElementById('t-rounds').textContent=Object.keys(roundSet).length;
+  var html='';
+  for(var i=0;i<state.today.length;i++){
+    var s=state.today[i];
+    html+='<div class="li">';
+    html+='<div class="li-top">';
+    html+='<div><div class="li-name">'+s.name+'</div><div class="li-meta">Round '+s.round+' · '+s.qty+' units · '+s.time+'</div></div>';
+    html+='<div><div class="li-profit">+€'+s.profit.toFixed(2)+'</div><div class="li-sub">€'+s.sell+' each</div></div>';
+    html+='</div>';
+    html+='<button class="rm-btn" onclick="removeSale('+i+')">🗑 REMOVE SALE</button>';
+    html+='</div>';
+  }
+  log.innerHTML=html;
+}
+
+function endDay(){
+  if(!state.today.length){alert('No sales to save');return;}
+  if(!confirm('End today and save to season?')) return;
+  var p=0,sold=0,rev=0;
+  for(var i=0;i<state.today.length;i++){p+=state.today[i].profit;sold+=state.today[i].qty;rev+=state.today[i].revenue;}
+  state.season.push({date:new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short'}),profit:p,sold:sold,revenue:rev,sales:state.today.length});
+  state.today=[];
+  save();
+  alert('Day saved to season!');
+  renderToday();
+}
+
+// ── STOCK ──
+function addStock(){
+  var name=document.getElementById('i-name').value;
+  var qty=parseInt(document.getElementById('i-qty').value)||0;
+  var buy=parseFloat(document.getElementById('i-buy').value)||0;
+  var sell=parseFloat(document.getElementById('i-sell').value)||0;
+  if(!name||!qty){alert('Enter item name and quantity');return;}
+  state.stock.push({name:name,qty:qty,remaining:qty,buy:buy,sell:sell});
+  save();
+  document.getElementById('i-name').value='';
+  document.getElementById('i-qty').value='';
+  document.getElementById('i-buy').value='';
+  document.getElementById('i-sell').value='';
+  renderStock();
+}
+
+function sellStock(i){
+  var input=document.getElementById('sq-'+i);
+  var qty=parseInt(input.value)||0;
+  var s=state.stock[i];
+  if(!qty||qty<1){alert('Enter how many you sold');return;}
+  if(qty>s.remaining){alert('Only '+s.remaining+' left in stock');return;}
+  state.stock[i].remaining-=qty;
+  state.today.push({name:s.name,buy:s.buy,sell:s.sell,qty:qty,round:1,
+    profit:(s.sell-s.buy)*qty,revenue:s.sell*qty,
+    time:new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})});
+  if(state.stock[i].remaining===0) state.stock.splice(i,1);
+  save();
+  renderStock();
+  alert(qty+'x '+s.name+' sold and logged to Today!');
+}
+
+function removeStock(i){
+  if(!confirm('Remove "'+state.stock[i].name+'" from stock?')) return;
+  state.stock.splice(i,1);
+  save();
+  renderStock();
+}
+
+function renderStock(){
+  var list=document.getElementById('stock-list');
+  if(!state.stock.length){
+    list.innerHTML='<div class="empty"><div class="ei">📦</div>No stock added yet.</div>';
+    return;
+  }
+  var html='';
+  for(var i=0;i<state.stock.length;i++){
+    var s=state.stock[i];
+    var pct=Math.round((s.remaining/s.qty)*100);
+    var col=pct>50?'var(--accent)':pct>20?'var(--yellow)':'var(--red)';
+    html+='<div class="li">';
+    html+='<div class="li-top">';
+    html+='<div><div class="li-name">'+s.name+'</div><div class="li-meta">Buy €'+s.buy+' · Sell €'+s.sell+'</div></div>';
+    html+='<div><div class="li-profit" style="color:'+col+'">'+s.remaining+'/'+s.qty+'</div><div class="li-sub">remaining</div></div>';
+    html+='</div>';
+    html+='<div class="sbar-wrap"><div class="sbar-fill" style="width:'+pct+'%;background:'+col+'"></div></div>';
+    html+='<div class="sell-row" style="margin-top:10px">';
+    html+='<input type="number" id="sq-'+i+'" placeholder="Qty sold" min="1" style="padding:8px 10px;font-size:14px">';
+    html+='<button class="mini-btn mini-btn-a" onclick="sellStock('+i+')">✓ Sold</button>';
+    html+='<button class="mini-btn" style="background:rgba(255,77,106,.15);color:var(--red);border:1px solid var(--red)" onclick="removeStock('+i+')">🗑</button>';
+    html+='</div>';
+    html+='</div>';
+  }
+  list.innerHTML=html;
+}
+
+// ── SEASON ──
+function renderSeason(){
+  var total=0,units=0;
+  for(var i=0;i<state.season.length;i++){total+=state.season[i].profit;units+=state.season[i].sold;}
+  document.getElementById('s-total').textContent='€'+total.toFixed(2);
+  document.getElementById('s-days').textContent=state.season.length;
+  document.getElementById('s-units').textContent=units;
+  var goal=state.goal||300;
+  var pct=Math.min((total/goal)*100,100);
+  document.getElementById('goal-bar').style.width=pct+'%';
+  document.getElementById('goal-pct').textContent=pct.toFixed(0)+'%';
+  document.getElementById('goal-display').textContent='Goal: €'+goal;
+  document.getElementById('remaining').textContent='€'+Math.max(goal-total,0).toFixed(2);
+  var daysLeft=parseInt(document.getElementById('days-left').value)||60;
+  var daysRemaining=Math.max(daysLeft-state.season.length,1);
+  document.getElementById('per-day').textContent='€'+(Math.max(goal-total,0)/daysRemaining).toFixed(2);
+  var log=document.getElementById('season-log');
+  if(!state.season.length){
+    log.innerHTML='<div class="empty"><div class="ei">📅</div>No days saved yet.</div>';
+    return;
+  }
+  var html='';
+  for(var i=state.season.length-1;i>=0;i--){
+    var d=state.season[i];
+    html+='<div class="li"><div class="li-top">';
+    html+='<div><div class="li-name">'+d.date+'</div><div class="li-meta">'+d.sold+' units · '+d.sales+' sales</div></div>';
+    html+='<div><div class="li-profit">+€'+d.profit.toFixed(2)+'</div><div class="li-sub">€'+d.revenue.toFixed(2)+' rev</div></div>';
+    html+='</div></div>';
+  }
+  log.innerHTML=html;
+}
+
+function updateGoal(){
+  state.goal=parseFloat(document.getElementById('goal-input').value)||300;
+  save();
+  renderSeason();
+}
+
+function resetSeason(){
+  if(!confirm('Reset entire season? Cannot be undone.')) return;
+  state={today:[],season:[],stock:[],goal:300};
+  save();
+  renderToday();
+  renderStock();
+  renderSeason();
+  alert('Season reset.');
+}
+
+// INIT
+renderToday();
+renderStock();
+</script>
+</body>
+</html>
